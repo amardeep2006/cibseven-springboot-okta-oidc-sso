@@ -1,0 +1,82 @@
+camunda.bpm:
+  bpm:
+    authorization:
+      enabled: true
+    admin-user:
+      id: demo@demo.com
+      firstName: Demo
+    filter:
+      create: All tasks
+    generic-properties:
+      properties:
+        generalResourceWhitelistPattern: '[.a-zA-Z0-9@_-]+'
+  oauth2:
+    identity-provider:
+      group-name-attribute: groups
+  sso-logout:
+    enabled: true
+    postLogoutRedirectUri: http://localhost:8080/webapp/
+
+spring:
+  config:
+    import:
+      - optional:classpath:cibseven-webclient.properties
+
+spring.security:
+  oauth2:
+    # spring security oauth2 client configuration for legacy Camunda webapp
+    client:
+      registration:
+        okta:
+          clientId: <Add your okta app client id here>
+          clientSecret: <Add your okta app secret here >
+          # note the additional scope offline_access is added
+          scope: openid,profile,email,offline_access
+          authorization-grant-type: authorization_code
+      provider:
+        okta:
+          issuer-uri: https://integrator-CHANGEIT.okta.com/oauth2/default
+          user-name-attribute: preferred_username
+    # spring security oauth2 resource server configuration for engine REST
+    resourceserver:
+      jwt:
+      # Worth mentioning that principal claim name in okta access token is sub. 
+      # This is different from keycloak where it is preferred_username
+        principal-claim-name: sub
+        issuer-uri: https://integrator-CHANGEIT.okta.com/oauth2/default
+        jwk-set-uri: https://integrator-CHANGEIT.okta.com/oauth2/default/v1/keys
+
+cibseven:
+  webclient:
+    services:
+      basePath: services/v1
+    # Engine rest
+    engineRest:
+      url: http://localhost:8080
+    authentication:
+      tokenValidMinutes: 30
+      tokenProlongMinutes: 10
+    sso:
+      active: true
+      endpoints:
+        authorization: https://integrator-CHANGEIT.okta.com/oauth2/default/v1/authorize
+        token: https://integrator-CHANGEIT.okta.com/oauth2/default/v1/token
+        jwks: https://integrator-CHANGEIT.okta.com/oauth2/default/v1/keys
+        user: https://integrator-CHANGEIT.okta.com/oauth2/default/v1/userinfo
+      clientId: <Add your okta app client id here>
+      clientSecret: <Add your okta app secret here >
+      # note the additional scope offline_access is added
+      scopes: openid email profile offline_access
+      userIdProperty: preferred_username
+      userNameProperty: name
+      accessTokenToEngineRest: true
+    bpm:
+      provider: org.cibseven.webapp.providers.SevenProvider
+    user:
+      provider: org.cibseven.webapp.auth.KeycloakUserProvider
+
+logging:
+  level:
+    root: INFO
+    # org.cibseven.bpm.spring.boot.starter.security.oauth2: DEBUG
+    # org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter: DEBUG
