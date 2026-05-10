@@ -1,5 +1,5 @@
 # cibseven okta example
-This has cibseven webapp and engine rest with okta sso. It also has legacy camunda app secured via okta sso.
+This example has cibseven webapps secured via okta ssso (OIDC - Authorization code flow) and engine rest via Client credentials flow. It also has legacy camunda apps that are secured via okta sso (Auth code flow).
 
 Things to make sure in Okta app registration:
 
